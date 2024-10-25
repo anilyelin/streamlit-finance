@@ -35,6 +35,31 @@ def calculateSMA(df, k):
     print(result_df)
     return result_df
 
+def calculateEMA(df, alpha):
+    """"
+    Calculates the Exponential Moving Average (EMA) for a given dataframe
+
+    Parameters:
+        df           : Dataframe with the financial data for a given stock asset
+        alpha (float): Represents the smoothing factor, it is a number between 0 and    
+
+    Returns: 
+        results_df   : Returns a df with the calculated EMA for a given alpha
+    """
+    df = df["Close"]
+    shape = df.values.shape
+    values = df.values.reshape(shape[::-1])
+    result_ema = np.zeros(shape[::-1])
+    for i in range(values.shape[0]):
+        if i == 0:
+            result_ema[0] = values[0]
+        else:
+            result_ema[i] = alpha * values[i] + (1 - alpha) * result_ema[i-1]
+    print(result_ema)
+    result_df = pd.DataFrame(result_ema.reshape(shape))
+    return result_df
+    
+
 st.title("Stock Analysis Dashboard")
 ticker = st.text_input("Enter stock ticker symbol: ", "AAPL")
 time_interval_col, sma_selection = st.columns([1,1])
@@ -42,6 +67,7 @@ time_interval_col.subheader("Timeinterval Selector")
 time_interval_value = time_interval_col.radio("Select time interval", ["1d", "5d", "1mo", "3mo"])
 sma_selection.subheader("SMA Day Selector")
 sma_selection_value = sma_selection.number_input("Enter SMA day parameter", min_value=1, max_value=30)
+ema_parameter = st.number_input("Enter EMA parameter", min_value=0.1, max_value=0.9, step=0.1)
 
 if st.button("Submit"):
     with st.spinner("Fetching Data"):
@@ -56,4 +82,6 @@ if st.button("Submit"):
         df = stock_data_history[['Date','Close']].copy()
         calculateSMA(df,4)
         st.line_chart(calculateSMA(df, sma_selection_value).set_index('foo'))
+        st.header("Exponential Moving Average for {}".format(ema_parameter))
+        st.line_chart(calculateEMA(df, ema_parameter))
 
