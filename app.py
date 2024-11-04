@@ -3,6 +3,9 @@ import streamlit as st
 import matplotlib.pyplot as plt 
 import numpy as np
 import pandas as pd
+import logging
+
+logger = logging.getLogger(__name__)
 
 def calculateSMA(df, k):
     """
@@ -16,20 +19,19 @@ def calculateSMA(df, k):
         result_df : Returns a df with the calculated SMA with a given k 
                     which will be used for plotting a graph
     """
-    logging = True
+    logging.basicConfig(filename='app.log')
     results = []
     i=0
     tmp = k
     for i in range(len(df["Close"])-tmp+1):
         if logging:
-            print("\tCurrent Value of i: ",i, " Current Value of k is: ",k)
+            logger.info("Current value of i: %d, Current value of k is: %d", i, k)
         current = df[i:k]["Close"].sum()
         result = current / tmp
         i+=1
         k+=1
         results.append(np.round(result,2))
-    print(results)
-    print()
+    logger.info("Results: %s ", results)
     x_data = df["Date"][tmp-1:len(df["Date"])]
     result_df = pd.DataFrame(list(zip(x_data, results)), columns=["foo","bar"])
     print(result_df)
